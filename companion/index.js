@@ -21,7 +21,7 @@ function queryHospital() {
         );
         ospedaliAPI.getAllHospital(latitude, longitude).then(ospedali => {
             if (messaging.peerSocket.readyState === messaging.peerSocket.OPEN) {
-                console.log(ospedali[0]);
+                console.log(ospedali.length);
                 //messaging.peerSocket.send(ospedali);
             }
         }).catch(e => {

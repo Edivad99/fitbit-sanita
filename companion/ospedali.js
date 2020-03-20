@@ -12,7 +12,8 @@ OspedaliAPI.prototype.getAllHospital = function (latitude, longitude) {
                 let ospedali = OspedaliAperti(res);
                 //Ordina gli ospedali in base alla distanza
                 ospedali = OrdinaOspedali(ospedali, latitude, longitude);
-
+                //Rimuovo le informazioni inutili e sistemo le altre
+                ospedali = LimitaOspedali(ospedali, 5);
                 resolve(ospedali);
             }).catch(error => {
                 reject(error);
@@ -42,6 +43,31 @@ function OrdinaOspedali(ospedali, myLatitude, myLongitude) {
 
     ospedali.sort((a,b) => { return (a["distanzaDaMe"] - b["distanzaDaMe"]) });
     return ospedali;
+}
+
+function LimitaOspedali(ospedali, limite) {
+
+    let ospedaliFinali = []
+    for (let i = 0; i < Math.min(limite, ospedali.length); i++) {
+        let ele = {
+            "nome": ospedali[i]["NOME_PS"],
+            "ulss": parseInt(ospedali[i]["ULSS"]),
+            "pediatrico": parseInt(ospedali[i]["PEDIATRICO"]) > 0 ? "Si" : "No",
+            "ginecologico": parseInt(ospedali[i]["GINECOLOGICO"]) > 0 ? "Si" : "No",
+            "primoIntervento": parseInt(ospedali[i]["PUNTO_PRIMO_INT"]) > 0 ? "Si" : "No",
+            "biancoVisita": parseInt(ospedali[i]["BIANCO_APERTE"]),
+            "biancoAttesa": parseInt(ospedali[i]["BIANCO_IN_ATTESA"]),
+            "verdeVisita": parseInt(ospedali[i]["VERDE_APERTE"]),
+            "verdeAttesa": parseInt(ospedali[i]["VERDE_IN_ATTESA"]),
+            "gialloVisita": parseInt(ospedali[i]["GIALLO_APERTE"]),
+            "gialloAttesa": parseInt(ospedali[i]["GIALLO_IN_ATTESA"]),
+            "rossoVisita": parseInt(ospedali[i]["ROSSO_APERTE"]),
+            "rossoAttesa": parseInt(ospedali[i]["ROSSO_IN_ATTESA"]),
+            "aggiornamento": ospedali[i]["DATA_AGGIORNAMENTO"]
+        }
+        ospedaliFinali.push(ele);
+    }
+    return ospedaliFinali;
 }
 
 //UTIL
