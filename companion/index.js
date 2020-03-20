@@ -2,51 +2,34 @@ import * as messaging from "messaging";
 import {
     geolocation
 } from "geolocation";
-import { OspedaliAPI } from "./ospedali.js"
+import {
+    OspedaliAPI
+} from "./ospedali.js"
 
-let proxyUrl = "https://cors-anywhere.herokuapp.com/"
-let baseUrl = "https://codeps-mobile.azero.veneto.it/codePS"
 
-// Fetch the hospitals
+//Send the hospital data to the device
 function queryHospital() {
-    fetch(baseUrl)
-        .then(res => {
-            return res.json()
-        })
-        .then(res => {
-            //Pulire i dati da tutti gli ospedali chiusi
-            res = OspedaliAperti(res);
-            //Ordina gli ospedali e mi restituisce i 5 
-            res = OrdinaOspedali(5);
-            //console.log(res[0]);
-        })
-        .catch(function (err) {
-            console.log("Error fetching hospital: " + err);
+    let ospedaliAPI = new OspedaliAPI();
+
+    geolocation.getCurrentPosition((position => { 
+        let latitude = position.coords.latitude;
+        let longitude = position.coords.longitude;
+
+        console.log(
+            "Latitude: " + position.coords.latitude,
+            "Longitude: " + position.coords.longitude
+        );
+        ospedaliAPI.getAllHospital(latitude, longitude).then(ospedali => {
+            if (messaging.peerSocket.readyState === messaging.peerSocket.OPEN) {
+                console.log(ospedali[0]);
+                //messaging.peerSocket.send(ospedali);
+            }
+        }).catch(e => {
+            console.log("error");
+            console.log(e);
         });
+    }));
 }
-
-
-
-//Send the weather data to the device
-function returnHospitalData(data) {
-    if (messaging.peerSocket.readyState === messaging.peerSocket.OPEN) {
-        //Send a command to the device
-        messaging.peerSocket.send(data);
-    } else {
-        console.log("Error: Connection is not open");
-    }
-}
-
-//recuperare posizione
-
-geolocation.getCurrentPosition((position => {
-    console.log(
-        "Latitude: " + position.coords.latitude,
-        "Longitude: " + position.coords.longitude
-    );
-}), (error) => {
-    console.log("Error: " + error.code, "Message: " + error.message);
-});
 
 //Listen for messages from the device
 messaging.peerSocket.onmessage = function (evt) {
